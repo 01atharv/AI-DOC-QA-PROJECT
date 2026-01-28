@@ -11,8 +11,7 @@ export async function askQuestion(req, res) {
   const contextText = matches.map((m) => m.text).join("\n\n");
 
   console.log('Top Chunks:', matches);
-  // const context = matches.map((c) => c.text).join("\n\n"); // you can store actual text chunks with FAISS if needed
-  
+
     const prompt = `
 You are a document-based assistant.
 Use ONLY the information provided in the context below.
@@ -33,7 +32,7 @@ Question: ${question}
     });
 
   } catch (error) {
-    // LLM failed? Use your PDF-only function as the fallback
+    // LLM failed? Use your PDF
     const pdfMatches = await getPdfOnlyAnswer(question);
     res.json({ 
       answer: pdfMatches, 

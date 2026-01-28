@@ -112,7 +112,7 @@ import fs from "fs";
 import pdf from "pdf-parse/lib/pdf-parse.js";
 import { Pinecone } from "@pinecone-database/pinecone";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { v4 as uuidv4 } from "uuid"
+import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -125,16 +125,15 @@ const pinecone = new Pinecone({
 const index = pinecone.index(process.env.PINECONE_INDEX_NAME);
 
 export async function getEmbedding(text) {
-  const model = client.getGenerativeModel({ model:"gemini-embedding-001" });
+  const model = client.getGenerativeModel({ model: "gemini-embedding-001" });
   const result = await model.embedContent({
-  content: { 
-    parts: [{ text: text }] 
-  },
-  outputDimensionality: 768, 
-});
-  
-  return result.embedding.values; // This should be an array of 768 number
+    content: {
+      parts: [{ text: text }],
+    },
+    outputDimensionality: 768,
+  });
 
+  return result.embedding.values; // This should be an array 
 }
 
 export async function uploadDocument(filePath) {
@@ -144,42 +143,42 @@ export async function uploadDocument(filePath) {
     console.log("STEP 1: Reading PDF...");
     const dataBuffer = fs.readFileSync(filePath);
     const data = await pdf(dataBuffer);
-    
+
     const chunks = data.text.match(/(.|\n){1,500}/g) || [];
-    console.log(`STEP 2: Found ${chunks.length} chunks. Generating embeddings...`);
+    console.log(
+      `STEP 2: Found ${chunks.length} chunks. Generating embeddings...`,
+    );
 
     const vectors = [];
     for (let i = 0; i < chunks.length; i++) {
       const embedding = await getEmbedding(chunks[i]);
       vectors.push({
-        id: uuidv4(), 
+        id: uuidv4(),
         values: embedding,
         metadata: { text: chunks[i] },
       });
     }
 
     console.log("STEP 3: Starting upsert to Pinecone...");
-    // Use batching to prevent timeouts
     const BATCH_SIZE = 100;
     for (let i = 0; i < vectors.length; i += BATCH_SIZE) {
-        const batch = vectors.slice(i, i + BATCH_SIZE);
-        await index.upsert(batch);
-        console.log(`Upserted batch starting at index ${i}`);
+      const batch = vectors.slice(i, i + BATCH_SIZE);
+      await index.upsert(batch);
+      console.log(`Upserted batch starting at index ${i}`);
     }
     const stats = await index.describeIndexStats();
     console.log("Total vectors:", stats.totalVectorCount);
-    console.log(`SUCCESS: Successfully sent ${vectors.length} vectors to Pinecone.`);
-
-    
+    console.log(
+      `SUCCESS: Successfully sent ${vectors.length} vectors to Pinecone.`,
+    );
   } catch (error) {
     console.error("CRITICAL ERROR IN UPLOAD:", error.message);
   }
 }
 
-
 export async function searchVectorStore(query, topK = 3) {
   const embedding = await getEmbedding(query);
-  
+
   const result = await index.query({
     vector: embedding,
     topK,
@@ -198,6 +197,6 @@ export async function getPdfOnlyAnswer(question, topK = 2) {
   const matches = await searchVectorStore(question, topK);
   if (!matches.length) {
     return "No relevant answer found in the document.";
-  }  
+  }
   return matches.map((m) => m.text).join("\n\n");
 }

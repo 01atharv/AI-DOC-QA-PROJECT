@@ -5,20 +5,18 @@ function App() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  
+  const [message, setMessage] = useState("");
 
-  const BACKEND_URL = "http://localhost:3000"; // change if needed
+  const BACKEND_URL = "http://localhost:3000"; 
 
   // Upload PDF
   const handleFileChangeAndUpload = async (e) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
 
-    // Set the file in state just in case you need it elsewhere
     setFile(selectedFile);
 
-    // Start Loading UI Immediately
+    
     setLoading(true);
     setMessage("Uploading PDF...");
 
@@ -45,11 +43,11 @@ function App() {
   };
 
   // Ask Question
- const askQuestion = async () => {
+  const askQuestion = async () => {
     if (!question) return;
 
     setLoading(true);
-    setAnswer(""); // Clear previous answer
+    setAnswer(""); 
 
     try {
       const response = await fetch(`${BACKEND_URL}/ask`, {
@@ -57,7 +55,7 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question }),
       });
-      
+
       const data = await response.json();
       setAnswer(data.answer);
     } catch (err) {
@@ -69,15 +67,17 @@ function App() {
 
   return (
     <div style={{ padding: 40, maxWidth: 700, margin: "auto" }}>
-      <h2>📄 AI Document Q&A</h2>
+      <h2>AI Document Q&A</h2>
 
-      {/* Upload */}
-     <div style={{ marginBottom: 20 }}>
-        <label style={{ display: 'block', marginBottom: 10 }}>Step 1: Upload PDF</label>
+      {/* File Upload */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={{ display: "block", marginBottom: 10 }}>
+          Step 1: Upload PDF
+        </label>
         <input
           type="file"
           accept="application/pdf"
-          onChange={handleFileChangeAndUpload} // Triggers immediately on select
+          onChange={handleFileChangeAndUpload} 
           disabled={loading}
         />
       </div>
@@ -93,7 +93,7 @@ function App() {
 
       <button onClick={askQuestion}>Ask</button>
 
-      {loading && <p>⏳ Thinking...</p>}
+      {loading && <p>Thinking...</p>}
 
       {answer && (
         <div style={{ marginTop: 20 }}>
